@@ -12,6 +12,22 @@ class AulaController {
             res.status(500).json({ message: `${erro.message} - Falha na requisição.` });
         }
     };
+    
+    static async listarAulasPaginaPrincipal (req, res) {
+        try {
+
+            const { limite = 5, pagina = 1 } = req.query;
+
+            const listaAulas = await aula.find()
+                .sort({ _id: -1 })
+                .skip((pagina - 1)* limite)
+                .limit(limite);
+
+            res.status(200).json(listaAulas);            
+        } catch (erro) {
+            res.status(500).json({ message: `${erro.message} - Falha na requisição.` });
+        }
+    };
 
     static async buscarAulaPorId (req, res) {
         try {
