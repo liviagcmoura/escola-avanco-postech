@@ -1,3 +1,4 @@
+import { query } from "express";
 import aula from "../models/Aula.js"; 
 import { usuario } from "../models/Usuario.js";
 
@@ -52,6 +53,23 @@ class AulaController {
         } catch (erro) {
             res.status(500).json({ message: `${erro.message} - Falha ao excluir a aula.` });
         }
+    };
+
+    static async buscarAulaPorPalavraChave (req, res)
+    {
+        const termoDeBusca =  req.query.termo;      
+        try {
+            const aulasPorTermo = await aula.find({
+                $or: [
+                    { titulo: { $regex: termoDeBusca, $options: 'i' } }, // Busca no título (case-insensitive)
+                    { conteudo: { $regex: termoDeBusca, $options: 'i' } },  // Busca no conteúdo (case-insensitive)
+                    { disciplina: { $regex: termoDeBusca, $options: 'i' } }  // Busca no conteúdo (case-insensitive)
+                ]
+             });
+            res.status(200).json(aulasPorTermo);
+        } catch (erro) {
+            res.status(500).json({ message: `${erro.message} - Falha ao buscar aula.` });
+        };
     };
 };
 
