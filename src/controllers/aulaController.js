@@ -1,3 +1,4 @@
+import { query } from "express";
 import aula from "../models/Aula.js"; 
 import { usuario } from "../models/Usuario.js";
 
@@ -6,6 +7,22 @@ class AulaController {
     static async listarAulas (req, res) {
         try {
             const listaAulas = await aula.find({});
+            res.status(200).json(listaAulas);            
+        } catch (erro) {
+            res.status(500).json({ message: `${erro.message} - Falha na requisição.` });
+        }
+    };
+    
+    static async listarAulasPaginaPrincipal (req, res) {
+        try {
+
+            const { limite = 5, pagina = 1 } = req.query;
+
+            const listaAulas = await aula.find()
+                .sort({ _id: -1 })
+                .skip((pagina - 1)* limite)
+                .limit(limite);
+
             res.status(200).json(listaAulas);            
         } catch (erro) {
             res.status(500).json({ message: `${erro.message} - Falha na requisição.` });
@@ -52,6 +69,23 @@ class AulaController {
         } catch (erro) {
             res.status(500).json({ message: `${erro.message} - Falha ao excluir a aula.` });
         }
+    };
+
+    static async buscarAulaPorPalavraChave (req, res)
+    {
+        const termoDeBusca =  req.query.termo;      
+        try {
+            const aulasPorTermo = await aula.find({
+                $or: [
+                    { titulo: { $regex: termoDeBusca, $options: 'i' } }, // Busca no título (case-insensitive)
+                    { conteudo: { $regex: termoDeBusca, $options: 'i' } },  // Busca no conteúdo (case-insensitive)
+                    { disciplina: { $regex: termoDeBusca, $options: 'i' } }  // Busca no conteúdo (case-insensitive)
+                ]
+             });
+            res.status(200).json(aulasPorTermo);
+        } catch (erro) {
+            res.status(500).json({ message: `${erro.message} - Falha ao buscar aula.` });
+        };
     };
 };
 
